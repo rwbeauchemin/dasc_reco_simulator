@@ -1,5 +1,6 @@
-import pandas as pd
 import requests
+import random
+import math
 
 
 def title_link(title_id):
@@ -31,37 +32,71 @@ def fetch_poster(title_id):
     full_path = "https://image.tmdb.org/t/p/w500/" + poster_path
     return full_path
 
-
-def get_recommendations(metadata, titles, cosine_sim, title_number):
-    """In this function we find similarity score between titles
+def apply_shuffling(titles, title_number, shuffle_mode=None):
+    """Shuffles using shuffling functions found in this utililty file.
 
     Args:
-        metadata (pd.DataFrame): The details for all titles
-        titles (list): The list of titles a siumlated user has viewed
-        cosine_sim (np.ndarray): A matrix of cosine similarities between titles
-        title_number (int): The number of titles to pull back details for
+        titles (pd.Dataframe): A dataframe to apply shuffling to
+        title_number (int): The number of titles to return
+        shuffle_mode (str, optional): The type of . Defaults to None.
 
     Returns:
-        pd.DataFrame: The dataframe with recommended titles, names, and scores
+        pd.DataFrame: The dataframe with shuffling and truncation applied
     """
-    indices = pd.Series(metadata.index, index=metadata['title']).drop_duplicates()
-    idx = {indices[t] for t in titles}
-    sim_scores = dict()
-    for title_idx in idx:
-        sim = cosine_sim[title_idx]
-        for i, s in enumerate(sim):
-            sim_scores[i] = s if s > sim_scores.get(i, 0) else sim_scores.get(i, 0)
+    if shuffle_mode is None or shuffle_mode == 'None':
+        titles = titles.head(title_number)
+    elif shuffle_mode == 'linear':
+        indices = linear_rising_temperature(list(titles.index), break_at=title_number)
+        titles = titles.loc[indices]
+    elif shuffle_mode == 'log':
+        indices = log_rising_temperature(list(titles.index), break_at=title_number)
+        titles = titles.loc[indices]
+    elif shuffle_mode == 'exp':
+        indices = exponential_rising_temperature(list(titles.index), break_at=title_number)
+        titles = titles.loc[indices]
+    return titles
 
-    for i in idx:
-        del sim_scores[i]
 
-    sim_scores = list(sorted(sim_scores.items(),
-                             key=lambda item: item[1],
-                             reverse=True))[:title_number]
+def exponential_rising_temperature(sorted_list: list,
+                                   init_group: int = 4,
+                                   break_at: int = 12):
+    final_list = []
+    group = init_group * 1
+    for i in range(len(sorted_list)):
+        selection = random.choice(sorted_list[:group])
+        sorted_list.remove(selection)
+        final_list.append(selection)
+        group *= 2
+        if i + 1 == break_at:
+            break
+    return final_list
 
-    title_indices = [i[0] for i in sim_scores]
-    title_similarity = [i[1] for i in sim_scores]
-    return pd.DataFrame(zip(metadata['id'].iloc[title_indices],
-                            metadata['title'].iloc[title_indices],
-                            title_similarity),
-                        columns=["movieId", "title", "score"])
+
+def linear_rising_temperature(sorted_list: list,
+                              init_temperature: int = 2,
+                              break_at: int = 12):
+    final_list = []
+    temperature = init_temperature * 1
+    for i in range(len(sorted_list)):
+        selection = random.choice(sorted_list[:temperature])
+        sorted_list.remove(selection)
+        final_list.append(selection)
+        temperature = (init_temperature + i) * 2
+        if i + 1 == break_at:
+            break
+    return final_list
+
+
+def log_rising_temperature(sorted_list: list,
+                           init_temperature: int = 2,
+                           break_at: int = 12):
+    final_list = []
+    temperature = init_temperature * 1
+    for i in range(len(sorted_list)):
+        selection = random.choice(sorted_list[:temperature])
+        sorted_list.remove(selection)
+        final_list.append(selection)
+        temperature = 2 * math.ceil(math.log(init_temperature + i)) + 1
+        if i + 1 == break_at:
+            break
+    return final_list

@@ -44,6 +44,7 @@ recommended_title_num = st.sidebar.slider(
     max_value=10,
     value=TITLE_NUMBER)
 show_score = st.sidebar.checkbox("Show Score")
+shuffle_mode = st.sidebar.radio("Shuffling", ['None', 'log', 'linear', 'exp'])
 
 # Initialize Title Widgets
 col_for_score_based = initialize_title_widget(
@@ -57,7 +58,7 @@ col_for_content_based_extra = initialize_title_widget(
     recommended_title_num)
 
 # Show Static Recommendations (Score-Based)
-score_based_recommended_titles = score_based_recommendations(recommended_title_num)
+score_based_recommended_titles = score_based_recommendations(recommended_title_num, shuffle_mode)
 show_recommended_title_info(
     score_based_recommended_titles,
     col_for_score_based,
@@ -68,7 +69,8 @@ if show_recommended_titles_btn:
     content_based_recommended_titles = content_based_cosine_recommendations(
         metadata,
         options,
-        recommended_title_num)
+        recommended_title_num,
+        shuffle_mode)
     show_recommended_title_info(
         content_based_recommended_titles,
         col_for_content_based,
@@ -77,7 +79,8 @@ if show_recommended_titles_btn:
     content_extra_based_recommended_titles = content_based_kernel_recommendations(
         metadata,
         options,
-        recommended_title_num)
+        recommended_title_num,
+        shuffle_mode)
     show_recommended_title_info(
         content_extra_based_recommended_titles,
         col_for_content_based_extra,
