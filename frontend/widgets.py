@@ -38,8 +38,8 @@ def show_recommended_title_info(recommended_titles, title_cols, show_score):
     links = [title_link(i) for i in title_ids]
     for c, t, s, p, l in zip(title_cols, title_titles, title_scores, posters, links):
         with c:
+            st.image(p)
             st.markdown(f"<a style='display: block; text-align: center;' href='{l}'>{t}</a>",
                         unsafe_allow_html=True)
-            st.image(p)
             if show_score:
                 st.write(round(s, 3))
