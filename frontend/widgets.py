@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import title_link, fetch_poster
+from utils import fetch_poster
 
 
 def initialize_title_widget(cfg, title_number):
@@ -35,11 +35,14 @@ def show_recommended_title_info(recommended_titles, title_cols, show_score):
     title_titles = recommended_titles["title"]
     title_scores = recommended_titles["score"]
     posters = [fetch_poster(i) for i in title_ids]
-    links = [title_link(i) for i in title_ids]
-    for c, t, s, p, l in zip(title_cols, title_titles, title_scores, posters, links):
+    # links = [title_link(i) for i in title_ids]
+    for c, t, s, p in zip(title_cols, title_titles, title_scores, posters):  # , links):
         with c:
             st.image(p)
-            st.markdown(f"<a style='display: block; text-align: center;' href='{l}'>{t}</a>",
+            # Use a mode if links available
+            # st.markdown(f"<a style='display: block; text-align: center;' href='{l}'>{t}</a>",
+            #             unsafe_allow_html=True)
+            st.markdown(f"<p style='display: block; text-align: center;'>{t}</p>",
                         unsafe_allow_html=True)
             if show_score:
                 st.write(round(s, 3))

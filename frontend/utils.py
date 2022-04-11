@@ -1,10 +1,9 @@
-import requests
 import random
 import math
 
 
 def title_link(title_id):
-    """Creates a link to view more details on a title given an id
+    """(Deprecated) Creates a link to view more details on a title given an id
 
     Args:
         title_id (Any): The id to look up with
@@ -12,6 +11,7 @@ def title_link(title_id):
     Returns:
         str: The link to get more details on the title
     """
+    # TODO: Find a good landing page to learn more about Peacock titles
     return f"https://www.themoviedb.org/movie/{title_id}"
 
 
@@ -24,13 +24,10 @@ def fetch_poster(title_id):
     Returns:
         str: The link to an image of the title
     """
-    url = (f"https://api.themoviedb.org/3/movie/{title_id}"
-           "?api_key=8265bd1679663a7ea12ac168da84d2e8&language=en-US")
-    data = requests.get(url)
-    data = data.json()
-    poster_path = data['poster_path']
-    full_path = "https://image.tmdb.org/t/p/w500/" + poster_path
-    return full_path
+    return (
+        'https://imageservice.disco.peacocktv.com/uuid/'
+        f'{title_id}/TITLE_ART_16_9/400'
+        '?territory=US&proposition=NBCUOTT&language=eng')
 
 def apply_shuffling(titles, title_number, shuffle_mode=None):
     """Shuffles using shuffling functions found in this utililty file.
