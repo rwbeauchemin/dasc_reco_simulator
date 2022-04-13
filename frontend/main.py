@@ -3,9 +3,9 @@ import streamlit as st
 # import streamlit.components.v1 as components
 from recommender import (
     score_based_recommendations,
-    content_based_cosine_recommendations,
     content_based_kernel_recommendations)
-from config import score_based_cfg, content_based_cosine_cfg, content_based_kernel_cfg
+# content_based_cosine_recommendations,
+from config import score_based_cfg, content_based_kernel_cfg  # , content_based_cosine_cfg
 from widgets import initialize_title_widget, show_recommended_title_info
 import sys
 import os
@@ -27,14 +27,14 @@ with open('frontend/style.css') as f:
         unsafe_allow_html=True)
 
 # Load Titles
-with open('frontend/mock_data/title_df.pickle', 'rb') as f:
-    metadata = pickle.load(f)
+with open('frontend/mock_data/title_metadata.pkl', 'rb') as f:
+    title_metadata = pickle.load(f)
 
 # Add Viewed Title Selector
 main_layout, search_layout = st.columns([10, 1])
 options = main_layout.multiselect(
     'Select Viewed Titles:',
-    metadata["title"].unique())
+    title_metadata["title"].unique())
 show_recommended_titles_btn = search_layout.button("Build")
 
 # Add Sidebar Widgets
@@ -50,15 +50,18 @@ shuffle_mode = st.sidebar.radio("Shuffling", ['None', 'log', 'linear', 'exp'])
 col_for_score_based = initialize_title_widget(
     score_based_cfg,
     recommended_title_num)
-col_for_content_based = initialize_title_widget(
-    content_based_cosine_cfg,
-    recommended_title_num)
+# col_for_content_based = initialize_title_widget(
+#     content_based_cosine_cfg,
+#     recommended_title_num)
 col_for_content_based_extra = initialize_title_widget(
     content_based_kernel_cfg,
     recommended_title_num)
 
 # Show Static Recommendations (Score-Based)
-score_based_recommended_titles = score_based_recommendations(recommended_title_num, shuffle_mode)
+score_based_recommended_titles = score_based_recommendations(
+    title_metadata,
+    recommended_title_num,
+    shuffle_mode)
 show_recommended_title_info(
     score_based_recommended_titles,
     col_for_score_based,
@@ -66,18 +69,8 @@ show_recommended_title_info(
 
 # Show Dynamic Recommendations (Content-Based)
 if show_recommended_titles_btn:
-    content_based_recommended_titles = content_based_cosine_recommendations(
-        metadata,
-        options,
-        recommended_title_num,
-        shuffle_mode)
-    show_recommended_title_info(
-        content_based_recommended_titles,
-        col_for_content_based,
-        show_score)
-
     content_extra_based_recommended_titles = content_based_kernel_recommendations(
-        metadata,
+        title_metadata,
         options,
         recommended_title_num,
         shuffle_mode)
@@ -85,3 +78,13 @@ if show_recommended_titles_btn:
         content_extra_based_recommended_titles,
         col_for_content_based_extra,
         show_score)
+
+#     content_based_recommended_titles = content_based_cosine_recommendations(
+#         title_metadata,
+#         options,
+#         recommended_title_num,
+#         shuffle_mode)
+#     show_recommended_title_info(
+#         content_based_recommended_titles,
+#         col_for_content_based,
+#         show_score)

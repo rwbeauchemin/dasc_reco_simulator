@@ -1,6 +1,5 @@
 import pandas as pd
 import scipy
-import pickle
 from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
 from utils import apply_shuffling
 
@@ -40,15 +39,16 @@ def get_recommendations(metadata, titles, cosine_sim, title_number, shuffle_mode
         zip(metadata['id'].iloc[title_indices],
             metadata['title'].iloc[title_indices],
             title_similarity),
-        columns=["movieId", "title", "score"])
+        columns=["id", "title", "score"])
 
     df = apply_shuffling(df, title_number, shuffle_mode)
     return df
 
-def score_based_recommendations(title_number, shuffle_mode=None):
+def score_based_recommendations(titles, title_number, shuffle_mode=None):
     """Select the top `title_number` titles given pre-calculated scores
 
     Args:
+        titles (pd.DataFrame): The DataFrame containing ids, titles, and scores
         title_number (int): The number of titles to select and display
         shuffle_mode (optional, str): (None, 'log', 'linear', 'exp') Adds shuffling
             to top `title_number` recommendations. Defaults to None (No shuffling)
@@ -56,11 +56,8 @@ def score_based_recommendations(title_number, shuffle_mode=None):
     Returns:
         pd.DataFrame: A DataFrame with the title ID, the name, and scores.
     """
-    with open('frontend/mock_data/title_scores.pickle', 'rb') as f:
-        titles = pickle.load(f)
     titles = apply_shuffling(titles, title_number, shuffle_mode)
     titles = titles[["id", "title", "score"]]
-    titles.columns = ["movieId", "title", "score"]
     return titles
 
 
@@ -78,7 +75,8 @@ def content_based_kernel_recommendations(metadata, titles, title_number, shuffle
     Returns:
         pd.DataFrame: A DataFrame with the title ID, the name, and scores.
     """
-    tfidf_matrix = scipy.sparse.load_npz('frontend/mock_data/tfidf_matrix.npz')
+    tfidf_matrix = scipy.sparse.load_npz('frontend/mock_data/tfidf_matrix_peacock.npz')
+    # Can also try with cosine_similarity if L2 Normalized (Rows currently do not sum to 1)
     cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
     return get_recommendations(metadata, titles, cosine_sim, title_number, shuffle_mode)
 

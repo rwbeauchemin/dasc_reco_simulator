@@ -31,7 +31,7 @@ def show_recommended_title_info(recommended_titles, title_cols, show_score):
         title_cols (st.columns): A streamlit columns object with empty contents
         show_score (bool): Whether or not to show the score on the UI.
     """
-    title_ids = recommended_titles["movieId"]
+    title_ids = recommended_titles["id"]
     title_titles = recommended_titles["title"]
     title_scores = recommended_titles["score"]
     posters = [fetch_poster(i) for i in title_ids]
